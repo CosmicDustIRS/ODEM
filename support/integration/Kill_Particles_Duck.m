@@ -1,0 +1,57 @@
+function [r, v, r2, v2] = Kill_Particles_Duck( r, v, r2, v2, plcenter, plnorm)
+% This function deletes all particles from the pool that are INSIDE THE
+% SHAPE MODEL, or are further away than 'max_distance'
+% Also moves particles between r,v and r2,v2 (far space and nearby space)
+
+global max_distance substep_distance rot_matrix
+r2_cc = [];
+v2_cc = [];
+max_elevation = max(plcenter(:,4));                                 % maximum elevation of comet
+absr2 = sqrt(r2(:,1).*r2(:,1) + r2(:,2).*r2(:,2) + r2(:,3).*r2(:,3));% particle distance (nearby)
+
+%% Far space
+if size(r,1) ~= 0 
+    absr = sqrt(r(:,1).*r(:,1) + r(:,2).*r(:,2) + r(:,3).*r(:,3));      % particle distance
+    greater_than_maxD = absr > max_distance;                    % These particles are further away than maxD and will be killed
+    move_to_nearby = absr < substep_distance;                   % These particles will be moved to the nearby space arrays (r2, v2)
+    no_kill_far = and(not(greater_than_maxD), not(move_to_nearby));%ese particles remain in far space
+else
+    move_to_nearby = [];
+    no_kill_far = [];
+end
+
+%% Nearby space
+if size(r2,1) ~= 0
+    % Do collision check for particles with distance < max_elevation
+    coll_check = absr2 < max_elevation;
+    r2_cc = r2(coll_check,:);
+    v2_cc = v2(coll_check,:);
+    dotp = zeros(size(r2_cc,1),1);
+    for k=1:size(r2_cc,1)
+        r_bfix = rot_matrix.' * r2_cc(k,1:3).';
+        b = [ r_bfix(1) - plcenter(:,1), r_bfix(2) - plcenter(:,2), r_bfix(3) - plcenter(:,3)];
+        b_abs = sqrt(b(:,1).*b(:,1) + b(:,2).*b(:,2) + b(:,3).*b(:,3));
+        [~, i] = min(b_abs);
+        dotp(k) = dot( b(i,1:3), plnorm(i,1:3));   
+    end
+    outside_shape = dotp > 0;                                   % These particles are below max_elev. but not inside the comet
+    move_to_far = absr2 > substep_distance;                     % These particles will be moved to the far space arrays (r, v)
+    no_kill_nearby = and(not(coll_check), not(move_to_far));    % These particles are above max_elev. but below substep_distance
+else
+    outside_shape = [];
+    move_to_far = [];
+    no_kill_nearby = [];
+end
+
+%% Update r, v, r2, v2
+r2_move_to_far = r2(move_to_far,:); 
+v2_move_to_far = v2(move_to_far,:);
+
+r2 = [r2(no_kill_nearby,:) ; r2_cc(outside_shape,:) ; r(move_to_nearby,:)];
+v2 = [v2(no_kill_nearby,:) ; v2_cc(outside_shape,:) ; v(move_to_nearby,:)];
+
+r = [r(no_kill_far,:) ; r2_move_to_far];
+v = [v(no_kill_far,:) ; v2_move_to_far];
+
+
+
