@@ -13,8 +13,9 @@ addpath('support/')
 cspice_furnsh( 'kernels.tm' ); 
 %profile on
 %% Constants
-global m_h2o Kb Sb A_0 GM nucls_rad f max_distance N_factor AU cmap ...
-    particle_production_rate substep_distance rot_vector rad_per_sec
+global m_h2o Kb Sb A_0 GM nucls_rad f max_distance N_factor AU cmap  ...
+    particle_production_rate substep_distance rot_vector rad_per_sec gasProd_total ...
+    dust_to_gas_ratio bulk_density redepos_mtot
 
 % Constants:
 m_h2o = 18.01528/1000 / 6.02214e23;     % Water molecular mass [kg]
@@ -30,28 +31,32 @@ nucls_rad = 2000;                   % Body norm radius [m] ??OBSOLETE??
 max_distance = 20e3;                % Distance at which particles are terminated [m]
 substep_distance = 2700;            % Distance below which integration time step is lowered [m]
 act_surf = 0.010;                   % Fraction of active comet surface (ice) [-]
+dust_to_gas_ratio = 4;              % Dust to gas ratio [-]
+bulk_density = 1000;                % Pariticle bulk density [kg/m3]
 shape_model_path = ...              % Location of shape model binary kernel    
     '.\Kernels\DSK\pcjo';
 
 % Model param.:
-particle_production_rate = 800;     % Approx. particle spawn rate [1/hour]
-dt = 90;                            % Time step [s]
-dt_nearby = dt/15;                   % Time step for nearby particles [s]
+particle_production_rate = 1500;     % Approx. particle spawn rate [1/hour]
+dt = 100;                            % Time step [s]
+dt_nearby = dt/10;                   % Time step for nearby particles [s]
 dt_spawn  = dt;                   % Time between spawning new particles [s]
-dt_frame  = 0;                   % Time between frames [s]
-stereoview = 1;                     % Set this to 1 to generate 2 views of every frame
+dt_frame  = dt;                   % Time between frames [s]
+stereoview = 0;                     % Set this to 1 to generate 2 views of every frame
 n_nodes = 3000;                     % Number of ice patches
-size_min = 10e-6;                  % Minimum particle size [m]         (diameter)
-size_max = 5000e-6;                 % Maximum particle size [m]
+size_min = 1000e-6;                  % Minimum particle size [m]         (diameter)
+size_max = 10000e-6;                 % Maximum particle size [m]
 size_discrete = 0;                  % Set this to run only one particle size [m]
-F_adj_exponent = .2;                % Exponent to adjust mass distribution
-bulk_density = 1000;                % Particle bulk density [kg/m3]
-t_start_utc = '2014 dec 30';         % Start date for simulation
-t_end_utc   = '2015 mar 30';         % End date for simulation
+F_adj_exponent = .25;                % Exponent to adjust mass distribution
+t_start_utc = '2015 jan 1';         % Start date for simulation
+t_start_sav = '2015 jan 1';         % Start date for saving escaping partilces
+t_end_utc   = '2015 jan 2';         % End date for simulation
 
 %% -----Start-----
 %% Prepare some variables
 N_factor = 1e7;
+gasProd_total = 0;
+redepos_mtot = [];
 if size_discrete == 0
     fprintf('Minimum particle size [mm]:         %.3f\n',size_min*1e3);
     fprintf('Maximum particle size [mm]:         %.3f\n',size_max*1e3);
@@ -69,6 +74,7 @@ r2=[];          % position array for particles near the nucleus
 v2=[];          % velocity array for particles near the nucleus
 states_leave=[];
 et_start = cspice_str2et(t_start_utc);
+et_start_sav = cspice_str2et(t_start_sav);
 et_end = cspice_str2et(t_end_utc);
 etime = et_start;
 Update_RotMatrix( et_start );
@@ -88,7 +94,7 @@ for t=0:dt:(et_end-et_start)
     %% Get Sun position and node positions+activity
     [sun_dis, sun_dir] = Get_Sun_Distance_and_Direction( etime );
     [nodes_pos, nodes_norm, nodes_int] = Update_Nodes( nodes_bfix, sun_dis, sun_dir, shape_handle );
-    [nodes_norm, Zd_bin] = Find_Activity( nodes_norm);
+    [nodes_norm, Zd_bin] = Find_Activity( nodes_norm, dt);
     
     %% Spawn particles
     if mod(t,dt_spawn) < dt
@@ -114,8 +120,10 @@ for t=0:dt:(et_end-et_start)
     %% Update time, rotation and particle pool
     etime = etime + dt;
     Update_RotMatrix( etime );
-    states_leave = Save_States_GTMAX( states_leave, etime, r, v );
-    [r, v, r2, v2] = Kill_Particles_Duck( r, v, r2, v2, plcenter, plnorm );
+    if etime >= et_start_sav        
+        states_leave = Save_States_GTMAX( states_leave, etime, r, v );
+    end
+    [r, v, r2, v2] = Kill_Particles_Duck( r, v, r2, v2, plcenter, plnorm);
     
     %% Plot
     if mod(t,dt_frame) < dt && dt_frame ~=0
@@ -128,7 +136,7 @@ for t=0:dt:(et_end-et_start)
         CamPos_Rosetta(etime, sun_dir);
         drawnow;                                    % Replot
         %myaa;          %Anti-Aliasing
-        %imwrite(getfield(getframe(gca),'cdata'),strcat('D:/FRAMES/test/',int2str(f),'.png'));
+        imwrite(getfield(getframe(gca),'cdata'),strcat('D:/FRAMES/redepos/',int2str(f),'.png'));
         if stereoview == 1
             %camorbit(1.44/8, 0, 'data', [0,0,1]);      % Rotate camera
         end
@@ -139,11 +147,12 @@ for t=0:dt:(et_end-et_start)
     end
     f=f+1;
 end
-toc
 %close(gcf);
 %% Finalise
 if size(states_leave,1)~= 0
-    save(['states_' regexprep(t_start_utc,'[^\w'']','') '_to_' ...
+    save(['states_' regexprep(t_start_sav,'[^\w'']','') '_to_' ...
         regexprep(t_end_utc,'[^\w'']','') '.txt'],'states_leave','-ascii');
 end
+fprintf('Average water production [kg/s]:    %.2f\n', gasProd_total/(et_end-et_start) * area);
+toc
 display(' ---  Simulation finished!');

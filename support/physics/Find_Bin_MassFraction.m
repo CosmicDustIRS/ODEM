@@ -2,7 +2,7 @@ function Find_Bin_MassFraction( mmin, mmax, F_adj_exponent )
 % This function finds the mass-bin-fraction of the total ejected mass.
 
 global N_factor Bin_frac_M Bin_avg_M F_cum_Nadj m_sampling_points...
-    F_cum_Nadj_mmin Bin_frac_Nadj MF_function avg_m_MF
+    F_cum_Nadj_mmin Bin_frac_Nadj MF_function avg_m_MF bulk_density
 
 m_sampling_points = 10.^(-20:.1:-2);
 F_cum_N = Cum_Num_Fraction(m_sampling_points);
@@ -23,7 +23,7 @@ Bin_frac_M = F_cum_M_mmax - F_cum_M_mmin;
 Bin_frac_N = F_cum_N_mmin - F_cum_N_mmax;
 Bin_avg_M = interp1(F_cum_N_unit, m_sampling_points, F_cum_N_mmin-.5*Bin_frac_N);
 
-size = 2 * (Bin_avg_M / (1000*pi*4/3))^(1/3);          % avg size [m] (diameter)
+size = 2 * (Bin_avg_M / (bulk_density*pi*4/3))^(1/3);          % avg size [m] (diameter)
 fprintf('Average particle size [mm]:         %.3f\n', size*1e3);
 
 

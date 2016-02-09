@@ -3,7 +3,7 @@ function [r, v, r2, v2] = Kill_Particles_Duck( r, v, r2, v2, plcenter, plnorm)
 % SHAPE MODEL, or are further away than 'max_distance'
 % Also moves particles between r,v and r2,v2 (far space and nearby space)
 
-global max_distance substep_distance rot_matrix
+global max_distance substep_distance rot_matrix bulk_density redepos_mtot
 r2_cc = [];
 v2_cc = [];
 max_elevation = max(plcenter(:,4));                                 % maximum elevation of comet
@@ -21,6 +21,7 @@ else
 end
 
 %% Nearby space
+cc_facetindex = zeros(size(r2_cc,1),1);
 if size(r2,1) ~= 0
     % Do collision check for particles with distance < max_elevation
     coll_check = absr2 < max_elevation;
@@ -33,6 +34,7 @@ if size(r2,1) ~= 0
         b_abs = sqrt(b(:,1).*b(:,1) + b(:,2).*b(:,2) + b(:,3).*b(:,3));
         [~, i] = min(b_abs);
         dotp(k) = dot( b(i,1:3), plnorm(i,1:3));   
+        cc_facetindex(k) = i; % This vector stores the index of the nearest facet for redepositiong studies
     end
     outside_shape = dotp > 0;                                   % These particles are below max_elev. but not inside the comet
     move_to_far = absr2 > substep_distance;                     % These particles will be moved to the far space arrays (r, v)
@@ -53,5 +55,26 @@ v2 = [v2(no_kill_nearby,:) ; v2_cc(outside_shape,:) ; v(move_to_nearby,:)];
 r = [r(no_kill_far,:) ; r2_move_to_far];
 v = [v(no_kill_far,:) ; v2_move_to_far];
 
-
+% Redepositioning study
+if size(r2_cc,1) ~= 0 && any(~outside_shape)
+    redepos_cstmr= r2_cc(~outside_shape,4);
+    redepos_mass = (9*3.14/(16*bulk_density^2)) ./ redepos_cstmr.^3;
+    redepos_MF   = v2_cc(~outside_shape,4);
+    cc_facetindex = cc_facetindex(~outside_shape);
+    for i=1:size(cc_facetindex,2)
+        findex = cc_facetindex(i);
+        m_add = redepos_mass(i)*redepos_MF(i);
+        if m_add == 0 
+            if redepos_mass(i) == 0
+                display('mass')
+                display(redepos_cstmr(i))
+            elseif redepos_MF(i) == 0
+                display('MF')
+            else
+                display('hmmm')
+            end
+        end
+        redepos_mtot(findex) = redepos_mtot(findex) + m_add;
+    end
+end
 

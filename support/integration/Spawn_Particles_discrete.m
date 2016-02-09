@@ -2,7 +2,7 @@ function [ r, v ] = Spawn_Particles_discrete( r_old, v_old, nodes_pos, nodes_int
 % This function spawns particles with discrete mass with spawn probability
 % according to node activiy.
 
-global f N_factor particle_production_rate
+global f N_factor particle_production_rate bulk_density
 
 n_nodes = size(nodes_pos,1);
 
@@ -42,7 +42,7 @@ if spawn_number == 0
 end
 
 s = repmat( .5 * discrete_size, spawn_number, 1);
-cstmr = (3/(4 * 1000))./ s;
+cstmr = (3/(4 * bulk_density))./ s;
 r = [nodes_pos(spawn_index, 1:3), cstmr]; 
 
 v = Initial_Velocity(r, spawn_number);

@@ -3,10 +3,10 @@ function [ r, v ] = Spawn_Particles_MC( r_old, v_old, nodes_pos, Zd_bin, dt_spaw
 % probability according to node activity and particles mass (Monte Carlo approach)
 
 global f F_cum_Nadj m_sampling_points F_cum_Nadj_mmin ...
-    MF_function Bin_frac_Nadj avg_m_MF Bin_avg_M particle_production_rate
+    MF_function Bin_frac_Nadj avg_m_MF Bin_avg_M particle_production_rate bulk_density
 n_nodes = size(nodes_pos,1);
 
-%% Adjust multiplication factor
+%% Adjust multiplication factor (only necessary once at the beginning of the simulation)
 if f==1
     M_rel = zeros(100,1);
     for i=1:100
@@ -70,8 +70,8 @@ MF_dust = interp1(m_sampling_points, MF_function, m_dust);
 %M_ist = sum(m_dust .* MF_dust);
 %diff = M_ist/M_soll
 
-s = (m_dust ./ (1000*pi*4/3)).^(1/3);
-cstmr = (3/(4 * 1000))./ s;
+s = (m_dust ./ (bulk_density*pi*4/3)).^(1/3);
+cstmr = (3/(4 * bulk_density))./ s;
 r = [nodes_pos(spawn_index, 1:3), cstmr]; 
 
 v = Initial_Velocity(r, spawn_number);
