@@ -11,11 +11,11 @@ addpath('support/physics')
 addpath('support/plot')
 addpath('support/')
 cspice_furnsh( 'kernels.tm' ); 
-%profile on
+profile on
 %% Constants
 global m_h2o Kb Sb A_0 GM nucls_rad f max_distance N_factor AU cmap  ...
     particle_production_rate substep_distance rot_vector rad_per_sec gasProd_total ...
-    dust_to_gas_ratio bulk_density redepos_mtot
+    dust_to_gas_ratio bulk_density redepos_mtot rosetta_init_distance
 
 % Constants:
 m_h2o = 18.01528/1000 / 6.02214e23;     % Water molecular mass [kg]
@@ -37,24 +37,30 @@ shape_model_path = ...              % Location of shape model binary kernel
     '.\Kernels\DSK\pcjo';
 
 % Model param.:
-particle_production_rate = 1500;     % Approx. particle spawn rate [1/hour]
-dt = 100;                            % Time step [s]
-dt_nearby = dt/10;                   % Time step for nearby particles [s]
-dt_spawn  = dt;                   % Time between spawning new particles [s]
-dt_frame  = dt;                   % Time between frames [s]
-stereoview = 0;                     % Set this to 1 to generate 2 views of every frame
+particle_production_rate = 1200;    % Approx. particle spawn rate [1/hour]
+dt = 90;                           % Time step [s]
+dt_nearby = dt/15;                  % Time step for nearby particles [s]
+dt_spawn  = dt;                     % Time between spawning new particles [s] (needs to be a multiple of dt, e.g. 1*dt, 2*dt,...)
 n_nodes = 3000;                     % Number of ice patches
-size_min = 1000e-6;                  % Minimum particle size [m]         (diameter)
-size_max = 10000e-6;                 % Maximum particle size [m]
+size_min = 500e-6;                   % Minimum particle size [m]         (diameter)
+size_max = 10000e-6;                % Maximum particle size [m]
 size_discrete = 0;                  % Set this to run only one particle size [m]
-F_adj_exponent = .25;                % Exponent to adjust mass distribution
-t_start_utc = '2015 jan 1';         % Start date for simulation
-t_start_sav = '2015 jan 1';         % Start date for saving escaping partilces
-t_end_utc   = '2015 jan 2';         % End date for simulation
+F_adj_exponent = .2;               % Exponent to adjust mass distribution
+t_start_utc = '2014 aug 31';        % Start date for simulation
+t_start_sav = '2014 sep 1';         % Start date for saving escaping partilces
+t_end_utc   = '2014 oct 1';         % End date for simulation
+
+% Animation param.:
+dt_frame  = dt;                     % Time between frames [s] (set to 0 to disable animation)(needs to be a multiple of dt, e.g. 1*dt, 2*dt,...)
+antialiasing= 0;                    % Set Anti-Aliasing
+stereoview  = 1;                    % Set this to 1 to generate 2 views of every frame
+plot_shadow = 1;                    % Set wether or not to plot shadow the comet casts on itself (increases runtime)
+frames_path = ...
+    'D:/FRAMES/redepos/';           % Set where to store the animation frames
 
 %% -----Start-----
 %% Prepare some variables
-N_factor = 1e7;
+N_factor = 1; %only needed for discrete particle sizes
 gasProd_total = 0;
 redepos_mtot = [];
 if size_discrete == 0
@@ -73,6 +79,7 @@ v=[];           % velocity array
 r2=[];          % position array for particles near the nucleus
 v2=[];          % velocity array for particles near the nucleus
 states_leave=[];
+rosetta_init_distance = 0;
 et_start = cspice_str2et(t_start_utc);
 et_start_sav = cspice_str2et(t_start_sav);
 et_end = cspice_str2et(t_end_utc);
@@ -80,8 +87,13 @@ etime = et_start;
 Update_RotMatrix( et_start );
 if dt_frame ~= 0
     [fig, cmap] = Create_Figure( );
+    mkdir(frames_path);
+    if stereoview == 1
+        mkdir([frames_path, 'second_view']);
+    end
+    Plot_Skybox();
 end
-f=1;
+f=1; %frame counter
 tic
 
 %% Load shape model and spawn random ice patches (nodes)
@@ -94,7 +106,7 @@ for t=0:dt:(et_end-et_start)
     %% Get Sun position and node positions+activity
     [sun_dis, sun_dir] = Get_Sun_Distance_and_Direction( etime );
     [nodes_pos, nodes_norm, nodes_int] = Update_Nodes( nodes_bfix, sun_dis, sun_dir, shape_handle );
-    [nodes_norm, Zd_bin] = Find_Activity( nodes_norm, dt);
+    [nodes_norm, Zd_bin] = Find_Activity( nodes_norm, dt, etime);
     
     %% Spawn particles
     if mod(t,dt_spawn) < dt
@@ -127,31 +139,47 @@ for t=0:dt:(et_end-et_start)
     
     %% Plot
     if mod(t,dt_frame) < dt && dt_frame ~=0
-        [gSunDir, gRot, gVel, gTerm, gSun] = Plot_Environment( sun_dir, etime );
-        delete(gVel);
-        %gbody = Plot_Duck_Shadow( plates, vertices, np, nv, plcenter, plnorm, shape_model_path, sun_dir);
-        gbody = Plot_Duck( plates, vertices, np, nv);
+        [gSunDir, gRot, gTerm, gSun] = Plot_Environment( sun_dir );
+        if plot_shadow == 1
+            gbody = Plot_Duck_Shadow( plates, vertices, np, nv, plcenter, plnorm, shape_model_path, sun_dir);
+        else
+            gbody = Plot_Duck( plates, vertices, np, nv);
+        end
         gdust = Plot_Particles(r, v, r2, v2);
-        %gGasP = Plot_GasProduction(nodes_pos, nodes_norm);
         CamPos_Rosetta(etime, sun_dir);
         drawnow;                                    % Replot
-        %myaa;          %Anti-Aliasing
-        imwrite(getfield(getframe(gca),'cdata'),strcat('D:/FRAMES/redepos/',int2str(f),'.png'));
-        if stereoview == 1
-            %camorbit(1.44/8, 0, 'data', [0,0,1]);      % Rotate camera
+        if antialiasing == 1
+            myaa;          %Anti-Aliasing
         end
-        %close(figure(2));
-        %gfc = figure(1);
-        %delete(gGasP);
+        imwrite(getfield(getframe(gca),'cdata'),strcat(frames_path,int2str(f),'.png'));
+        if antialiasing == 1
+            close(figure(2));   %close anti-alisased picture 
+            gfc = figure(1);    %and return to animation figure
+        end
+        if stereoview == 1
+            CamPos_Stereo(etime);
+            if antialiasing == 1
+                myaa;          %Anti-Aliasing
+            end
+            imwrite(getfield(getframe(gca),'cdata'),strcat([frames_path,'second_view/'],int2str(f),'.png'));
+            if antialiasing == 1
+                close(figure(2));   %close anti-alisased picture
+                gfc = figure(1);    %and return to animation figure
+            end
+        end
         delete([gbody, gdust, gSunDir, gRot, gTerm, gSun]);
     end
-    f=f+1;
+    f=f+1;  %frame counter
 end
 %close(gcf);
 %% Finalise
 if size(states_leave,1)~= 0
     save(['states_' regexprep(t_start_sav,'[^\w'']','') '_to_' ...
         regexprep(t_end_utc,'[^\w'']','') '.txt'],'states_leave','-ascii');
+end
+if size(redepos_mtot,1)~= 0
+    save(['redepos_' regexprep(t_start_sav,'[^\w'']','') '_to_' ...
+        regexprep(t_end_utc,'[^\w'']','') '.txt'],'redepos_mtot');
 end
 fprintf('Average water production [kg/s]:    %.2f\n', gasProd_total/(et_end-et_start) * area);
 toc
