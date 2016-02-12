@@ -35,18 +35,6 @@ Z=[v(3,p(1,:)); v(3,p(2,:)); v(3,p(3,:))];
 C = ones(3,np); 
 
 gbody = patch(X,Y,Z,C, 'FaceLighting', 'flat', ...'BackFaceLighting', 'unlit',...
-    'AmbientStrength', 0.1, 'DiffuseStrength', .2, 'LineStyle', 'none',...
+    'AmbientStrength', 0.2, 'DiffuseStrength', .7, 'LineStyle', 'none',...
     'FaceNormals', -plnorm_par,  'FaceColor', [.6 .6 .6]);
-end
 
-%SINGLETHREAD
-% sun_bfix = rot_matrix.' * sun_dir;
-% for i=1:np
-%     plnorm(i,1:3) = rot_matrix * plnorm(i,1:3).';
-%     if dot(plnorm(i,1:3), sun_dir) > 0
-%         [~,~,found] = cspice_dskx02(shape_handle, dladsc, plcenter(i,1:3).'/1000, sun_bfix);
-%         if found
-%             plnorm(i,1:3) = -sun_dir;
-%         end
-%     end
-% end

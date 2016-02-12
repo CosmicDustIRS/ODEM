@@ -13,10 +13,10 @@ Z=[v(3,p(1,:)); v(3,p(2,:)); v(3,p(3,:))];
 % Set facet colors:
 hit_index = redepos_mtot > 0;
 C = .6.*ones(np,1,3);
-C(hit_index,1,1) = 1;
-C(hit_index,1,2:3) = 0;
+%C(hit_index,1,1) = 1;
+%C(hit_index,1,2:3) = 0;
 
 gbody = patch(X,Y,Z,C, 'FaceColor', 'flat',...'BackFaceLighting', 'unlit',...
-    'AmbientStrength', 0.3, 'DiffuseStrength', .8, 'LineStyle', 'none');
+    'AmbientStrength', 0.2, 'DiffuseStrength', .8, 'LineStyle', 'none');
 
 end

@@ -1,11 +1,11 @@
-function [nodes_norm, Zd_bin] = Find_Activity( nodes_norm, dt)
+function [nodes_norm, Zd_bin] = Find_Activity( nodes_norm, dt, etime)
 % This function finds every active node's activity based on its surface
 % temperature. 
 
 global m_h2o Bin_frac_M Bin_avg_M gasProd_total dust_to_gas_ratio
 
 T = nodes_norm(:,4);
-Z = Gas_Production(T);
+Z = Gas_Production(T) * GP_observation_factor(etime);
 Vg = Gas_Velocity(T);
 nodes_norm(:,4) = Z .* Vg .* m_h2o;
 
