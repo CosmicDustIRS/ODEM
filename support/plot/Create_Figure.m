@@ -3,7 +3,7 @@ function [fig, cmap] = Create_Figure( )
 % Returns the figure handle and a colormap vector
 
 figure (1)
-opengl('software')
+opengl('hardware')
 set(gcf,'Renderer','OpenGL')
 set(gcf,'Position', [100, 20, 1280, 800])
 set(gca,'Position', [0,0,1,1])

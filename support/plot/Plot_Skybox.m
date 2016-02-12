@@ -11,41 +11,41 @@ for c=1:6
     end
 end
 hold on;
-a=50;
+a=1e6;
 
 %x negative
 for i=0:3
     for j=0:3
         surf([-2*a,-2*a;-2*a,-2*a],[2*a-j*a,2*a-j*a-a;2*a-j*a,2*a-j*a-a],[2*a-i*a,2*a-i*a;2*a-i*a-a,2*a-i*a-a],...
-            'FaceColor','texturemap','CData',skybox{4}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct');
+            'FaceColor','texturemap','CData',skybox{4}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct','FaceLightin','none');
     end
 end
 %y negative
 for i=0:3
     for j=0:3
         surf([2*a-j*a,2*a-j*a-a;2*a-j*a,2*a-j*a-a],[-2*a,-2*a;-2*a,-2*a],[2*a-i*a,2*a-i*a;2*a-i*a-a,2*a-i*a-a],...
-            'FaceColor','texturemap','CData',skybox{2}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct');
+            'FaceColor','texturemap','CData',skybox{2}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct','FaceLightin','none');
     end
 end
 % %z negative
 for i=0:3
     for j=0:3
         surf([2*a-j*a,2*a-j*a-a;2*a-j*a,2*a-j*a-a],[-2*a+i*a,-2*a+i*a;-2*a+i*a+a,-2*a+i*a+a],[-2*a,-2*a;-2*a,-2*a],...
-            'FaceColor','texturemap','CData',skybox{3}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct');
+            'FaceColor','texturemap','CData',skybox{3}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct','FaceLightin','none');
     end
 end
 %x positive
 for i=0:3
     for j=0:3
         surf([2*a,2*a;2*a,2*a],[-2*a+j*a,-2*a+j*a+a;-2*a+j*a,-2*a+j*a+a],[2*a-i*a,2*a-i*a;2*a-i*a-a,2*a-i*a-a],...
-            'FaceColor','texturemap','CData',skybox{1}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct');
+            'FaceColor','texturemap','CData',skybox{1}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct','FaceLightin','none');
     end
 end
 %y positive
 for i=0:3
     for j=0:3
         surf([-2*a+j*a,-2*a+j*a+a;-2*a+j*a,-2*a+j*a+a],[2*a,2*a;2*a,2*a],[2*a-i*a,2*a-i*a;2*a-i*a-a,2*a-i*a-a],...
-            'FaceColor','texturemap','CData',skybox{5}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct');
+            'FaceColor','texturemap','CData',skybox{5}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct','FaceLightin','none');
      end
 end
  
