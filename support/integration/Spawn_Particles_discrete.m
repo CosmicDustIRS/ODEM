@@ -9,7 +9,7 @@ n_nodes = size(nodes_pos,1);
 P_spawn = Zd_bin .* nodes_pos(:,4) .* (pi * dt_spawn / N_factor);
 spawn_rate = mean(P_spawn) * n_nodes / dt_spawn * 3600;
 
-if f == 1                   % Adjust particle production rate
+if f == 1                                                   % Adjust particle production rate
     sr_adj = particle_production_rate / spawn_rate;
     N_factor = N_factor / sr_adj;
     P_spawn = Zd_bin .* nodes_pos(:,4) .* (pi * dt_spawn / N_factor);

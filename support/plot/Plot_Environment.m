@@ -1,4 +1,4 @@
-function [gSunDir, gRot, gTerm, gSun] = Plot_Environment( sun_dir)
+function [gSunDir, gRot, gVel, gTerm, gSun] = Plot_Environment( sun_dir, etime )
 % This function plots some lines and the terminator plane
 
 global nucls_rad rot_matrix
@@ -25,3 +25,10 @@ gTerm = patch([-vec1(1)-vec2(1), -vec1(1)+vec2(1), vec1(1)+vec2(1), vec1(1)-vec2
               [-vec1(2)-vec2(2), -vec1(2)+vec2(2), vec1(2)+vec2(2), vec1(2)-vec2(2)],...
               [-vec1(3)-vec2(3), -vec1(3)+vec2(3), vec1(3)+vec2(3), vec1(3)-vec2(3)],...
               [.6,.6,.6], 'FaceAlpha', .2, 'EdgeColor', 'none');
+
+% Plot velocity vector
+comet_state = cspice_spkezr('1000012', etime, 'ECLIPJ2000', 'none', '10');
+vel = comet_state(4:6)/norm(comet_state(4:6)) * (3*nucls_rad);
+gVel = plot3([0, vel(1)], [0, vel(2)], [0, vel(3)], 'Color', [.8 .9 0], 'LineWidth', 2);
+end
+

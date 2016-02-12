@@ -55,7 +55,7 @@ v2 = [v2(no_kill_nearby,:) ; v2_cc(outside_shape,:) ; v(move_to_nearby,:)];
 r = [r(no_kill_far,:) ; r2_move_to_far];
 v = [v(no_kill_far,:) ; v2_move_to_far];
 
-%% Redepositioning study
+% Redepositioning study
 if size(r2_cc,1) ~= 0 && any(~outside_shape)
     redepos_cstmr= r2_cc(~outside_shape,4);
     redepos_mass = (9*3.14/(16*bulk_density^2)) ./ redepos_cstmr.^3;
@@ -64,6 +64,16 @@ if size(r2_cc,1) ~= 0 && any(~outside_shape)
     for i=1:size(cc_facetindex,2)
         findex = cc_facetindex(i);
         m_add = redepos_mass(i)*redepos_MF(i);
+        if m_add == 0 
+            if redepos_mass(i) == 0
+                display('mass')
+                display(redepos_cstmr(i))
+            elseif redepos_MF(i) == 0
+                display('MF')
+            else
+                display('hmmm')
+            end
+        end
         redepos_mtot(findex) = redepos_mtot(findex) + m_add;
     end
 end

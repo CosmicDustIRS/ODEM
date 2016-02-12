@@ -83,7 +83,6 @@ GMb = 7.43e12 * 6.674e-11;                          % GM of big body
 rb = r - repmat([b;0]',n,1);
 absr = sqrt(rb(:,1).*rb(:,1) + rb(:,2).*rb(:,2) + rb(:,3).*rb(:,3));
 r3 = absr.*absr.*absr;
-r3 = max(r3, 1643^3);
 GMr3 = -GMb ./ r3;
 accel_1 = [ rb(:,1) .* GMr3,  rb(:,2) .* GMr3,  rb(:,3) .* GMr3, zeros(n,1)];
 
@@ -93,7 +92,7 @@ GMs = 2.68e12 * 6.674e-11;                          % GM of small body
 rs = r - repmat([s;0]',n,1);
 absr = sqrt(rs(:,1).*rs(:,1) + rs(:,2).*rs(:,2) + rs(:,3).*rs(:,3));
 r3 = absr.*absr.*absr;
-r3 = max(r3, 1169^3);
+r3 = max(r3, 1e9);
 GMr3 = -GMs ./ r3;
 accel_2 = [ rs(:,1) .* GMr3,  rs(:,2) .* GMr3,  rs(:,3) .* GMr3, zeros(n,1)];
 
