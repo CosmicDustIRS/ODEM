@@ -307,7 +307,6 @@ Particle_Integrator/Test/OUTPUT/
 
 # ODEM
 support/plot/myaa.m
-support/plot/CamPos_Rosetta.m
 support/plot/Create_Figure.m
 textures
 alpha_dsk_matlab

@@ -1,4 +1,5 @@
 clear
+close(gcf)
 display(' ---  Outgassing and Dust Emission Model for 67P  ---');
 %% add paths
 addpath('mice/src/mice/')
@@ -11,11 +12,11 @@ addpath('support/physics')
 addpath('support/plot')
 addpath('support/')
 cspice_furnsh( 'kernels.tm' ); 
-profile on
+%profile on
 %% Constants
 global m_h2o Kb Sb A_0 GM nucls_rad f max_distance N_factor AU cmap  ...
     particle_production_rate substep_distance rot_vector rad_per_sec gasProd_total ...
-    dust_to_gas_ratio bulk_density redepos_mtot rosetta_init_distance
+    dust_to_gas_ratio bulk_density redepos_mtot
 
 % Constants:
 m_h2o = 18.01528/1000 / 6.02214e23;     % Water molecular mass [kg]
@@ -34,29 +35,31 @@ act_surf = 0.010;                   % Fraction of active comet surface (ice) [-]
 dust_to_gas_ratio = 4;              % Dust to gas ratio [-]
 bulk_density = 1000;                % Pariticle bulk density [kg/m3]
 shape_model_path = ...              % Location of shape model binary kernel    
-    '.\Kernels\DSK\pcjo';
+    '.\Kernels\DSK\CSHP_DV_170_01_______00243_20000.BDS';
 
 % Model param.:
-particle_production_rate = 1200;    % Approx. particle spawn rate [1/hour]
+particle_production_rate = 1000;    % Approx. particle spawn rate [1/hour]
 dt = 90;                           % Time step [s]
 dt_nearby = dt/15;                  % Time step for nearby particles [s]
 dt_spawn  = dt;                     % Time between spawning new particles [s] (needs to be a multiple of dt, e.g. 1*dt, 2*dt,...)
 n_nodes = 3000;                     % Number of ice patches
-size_min = 500e-6;                   % Minimum particle size [m]         (diameter)
+size_min = 3000e-6;                   % Minimum particle size [m]         (diameter)
 size_max = 10000e-6;                % Maximum particle size [m]
 size_discrete = 0;                  % Set this to run only one particle size [m]
 F_adj_exponent = .2;               % Exponent to adjust mass distribution
-t_start_utc = '2014 aug 31';        % Start date for simulation
-t_start_sav = '2014 sep 1';         % Start date for saving escaping partilces
-t_end_utc   = '2014 oct 1';         % End date for simulation
+t_start_utc = '2015 jan 12 6:00';        % Start date for simulation
+t_start_sav = '2015 sep 1';         % Start date for saving escaping partilces
+t_end_utc   = '2015 oct 1';         % End date for simulation
 
 % Animation param.:
 dt_frame  = dt;                     % Time between frames [s] (set to 0 to disable animation)(needs to be a multiple of dt, e.g. 1*dt, 2*dt,...)
 antialiasing= 0;                    % Set Anti-Aliasing
-stereoview  = 1;                    % Set this to 1 to generate 2 views of every frame
-plot_shadow = 1;                    % Set wether or not to plot shadow the comet casts on itself (increases runtime)
+plot_shadow = 0;                    % Set wether or not to plot shadow the comet casts on itself (increases runtime)
+plot_skybox = 0;                    % Set wether or not to plot star background.
+stereoview  = 0;                    % Set this to 1 to generate 2 views of every frame
+viewer_distance = 60;             % Set distance of scenery to your face [cm]. Decrease to increase 3d effect. 
 frames_path = ...
-    'D:/FRAMES/redepos/';           % Set where to store the animation frames
+    'D:/FRAMES/test/';           % Set where to store the animation frames
 
 %% -----Start-----
 %% Prepare some variables
@@ -91,7 +94,9 @@ if dt_frame ~= 0
     if stereoview == 1
         mkdir([frames_path, 'second_view']);
     end
-    Plot_Skybox();
+    if plot_skybox == 1
+        Plot_Skybox();
+    end
 end
 f=1; %frame counter
 tic
@@ -135,7 +140,7 @@ for t=0:dt:(et_end-et_start)
     if etime >= et_start_sav        
         states_leave = Save_States_GTMAX( states_leave, etime, r, v );
     end
-    [r, v, r2, v2] = Kill_Particles_Duck( r, v, r2, v2, plcenter, plnorm);
+    [r, v, r2, v2] = Kill_Particles_Duck( r, v, r2, v2, plcenter, plnorm, et_start_sav, etime);
     
     %% Plot
     if mod(t,dt_frame) < dt && dt_frame ~=0
@@ -157,7 +162,7 @@ for t=0:dt:(et_end-et_start)
             gfc = figure(1);    %and return to animation figure
         end
         if stereoview == 1
-            CamPos_Stereo(etime);
+            CamPos_Stereo(viewer_distance,0);
             if antialiasing == 1
                 myaa;          %Anti-Aliasing
             end
