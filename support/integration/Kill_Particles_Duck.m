@@ -1,4 +1,4 @@
-function [r, v, r2, v2] = Kill_Particles_Duck( r, v, r2, v2, plcenter, plnorm)
+function [r, v, r2, v2] = Kill_Particles_Duck( r, v, r2, v2, plcenter, plnorm, et_start_sav, etime)
 % This function deletes all particles from the pool that are INSIDE THE
 % SHAPE MODEL, or are further away than 'max_distance'
 % Also moves particles between r,v and r2,v2 (far space and nearby space)
@@ -56,7 +56,7 @@ r = [r(no_kill_far,:) ; r2_move_to_far];
 v = [v(no_kill_far,:) ; v2_move_to_far];
 
 %% Redepositioning study
-if size(r2_cc,1) ~= 0 && any(~outside_shape)
+if size(r2_cc,1) ~= 0 && any(~outside_shape) && etime > et_start_sav
     redepos_cstmr= r2_cc(~outside_shape,4);
     redepos_mass = (9*3.14/(16*bulk_density^2)) ./ redepos_cstmr.^3;
     redepos_MF   = v2_cc(~outside_shape,4);

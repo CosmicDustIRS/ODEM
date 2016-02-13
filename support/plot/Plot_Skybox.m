@@ -48,25 +48,10 @@ for i=0:3
             'FaceColor','texturemap','CData',skybox{5}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct','FaceLightin','none');
      end
 end
- 
-
-% %x negative
-% surf([-100,-100;-100,-100],[100,100;-100,-100],[-100,100;-100,100],...
-%     'FaceColor','texturemap','CData',cube_image{1},'EdgeColor','none','CDataMapping','direct');
-% 
-% %y negative
-% surf([100,-100;100,-100],[-100,-100;-100,-100],[100,100;-100,-100],...
-%     'FaceColor','texturemap','CData',cube_image{2},'EdgeColor','none','CDataMapping','direct');
-% 
-% %z negative
-% surf([100,-100;100,-100],[-100,-100;100,100],[-100,-100;-100,-100],...
-%     'FaceColor','texturemap','CData',cube_image{3},'EdgeColor','none','CDataMapping','direct');
-% 
-% %x positive
-% surf([100,100;100,100],[-100,-100;100,100],[100,-100;100,-100],...
-%     'FaceColor','texturemap','CData',cube_image{4},'EdgeColor','none','CDataMapping','direct');
-% 
-% %y positive
-% surf([-100,100;-100,100],[100,100;100,100],[100,100;-100,-100],...
-%     'FaceColor','texturemap','CData',cube_image{5},'EdgeColor','none','CDataMapping','direct');
-% 
+%z positive
+for i=0:3
+    for j=0:3
+        surf([2*a-j*a,2*a-j*a-a;2*a-j*a,2*a-j*a-a],[-2*a+i*a,-2*a+i*a;-2*a+i*a+a,-2*a+i*a+a],[2*a,2*a;2*a,2*a],...
+            'FaceColor','texturemap','CData',skybox{6}{i+1}{j+1},'EdgeColor','none','CDataMapping','direct','FaceLightin','none');
+    end
+end 

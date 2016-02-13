@@ -20,8 +20,8 @@ C(excape_index,1) = 1;
 C(excape_index,2) = 0;
 C(excape_index,3) = 1;
 
-gdust = scatter3(r(:,1),r(:,2),r(:,3),20,'.g');
+gdust = scatter3(r(:,1),r(:,2),r(:,3),2,'og','filled','MarkerFaceAlpha',1, ...
+    'MarkerEdgeColor','none');
 gdust.CData = C;
 
-end
 
