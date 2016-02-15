@@ -6,6 +6,17 @@ global f F_cum_Nadj m_sampling_points F_cum_Nadj_mmin ...
     MF_function Bin_frac_Nadj avg_m_MF Bin_avg_M particle_production_rate bulk_density
 n_nodes = size(nodes_pos,1);
 
+
+P_spawn = Zd_bin .* nodes_pos(:,4) .* (pi * dt_spawn / avg_m_MF);  %Probability of every node to spawn a particle
+spawn_rate = mean(P_spawn) * n_nodes / dt_spawn * 3600;
+if f == 1                                                   % Adjust particle production rate
+    sr_adj = particle_production_rate / spawn_rate;
+    avg_m_MF = avg_m_MF ./ sr_adj;
+    P_spawn = Zd_bin .* nodes_pos(:,4) .* (pi * dt_spawn / avg_m_MF);
+    spawn_rate = mean(P_spawn) * n_nodes / dt_spawn * 3600;
+    fprintf('Particle spawn rate [1/h]:          %.0f\n', spawn_rate);
+end
+
 %% Adjust multiplication factor (only necessary once at the beginning of the simulation)
 if f==1
     M_rel = zeros(100,1);
@@ -21,21 +32,9 @@ if f==1
         M_ist = sum(m_dust .* MF_dust);
         M_rel(i) = M_ist/M_soll;
     end
-    avg_m_MF = avg_m_MF * mean(M_rel);
+    MF_function = MF_function / mean(M_rel);
     %disp('rel. diff.:');
     %mean(M_rel)
-end
-%%
-
-P_spawn = Zd_bin .* nodes_pos(:,4) .* (pi * dt_spawn / avg_m_MF);
-spawn_rate = mean(P_spawn) * n_nodes / dt_spawn * 3600;
-if f == 1                                                   % Adjust particle production rate
-    sr_adj = particle_production_rate / spawn_rate;
-    MF_function = MF_function ./ sr_adj;
-    avg_m_MF = avg_m_MF ./ sr_adj;
-    P_spawn = Zd_bin .* nodes_pos(:,4) .* (pi * dt_spawn / avg_m_MF);
-    spawn_rate = mean(P_spawn) * n_nodes / dt_spawn * 3600;
-    fprintf('Particle spawn rate [1/h]:          %.0f\n', spawn_rate);
 end
 
 %% Warnings

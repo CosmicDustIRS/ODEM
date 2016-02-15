@@ -47,8 +47,8 @@ F_cum_Nadj_mmax = interp1(m_sampling_points, F_cum_Nadj, mmax);
 Bin_frac_Nadj = F_cum_Nadj_mmin - F_cum_Nadj_mmax;
 MF_function = F_diff_N_unit ./ F_diff_Nadj;
 
-normMF_at_1mm = interp1(m_sampling_points,MF_function, 5e-7);
-MF_function = MF_function ./ normMF_at_1mm .* N_factor;
+%normMF_at_1mm = interp1(m_sampling_points,MF_function, 5e-7);
+%MF_function = MF_function ./ normMF_at_1mm .* N_factor;    %old bullshit
  
 %%%%0111
 Bin_avg_M = interp1(F_cum_Nadj, m_sampling_points, F_cum_Nadj_mmin-.5*Bin_frac_Nadj);
