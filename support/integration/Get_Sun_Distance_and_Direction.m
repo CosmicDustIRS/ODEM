@@ -7,7 +7,7 @@ sun_pos = cspice_spkpos('10', etime, 'ECLIPJ2000', 'none', '1000012');
 sun_pos = sun_pos / AU;
 dis_sun = norm(sun_pos);
 dir_sun = sun_pos / dis_sun;
-if f == 1
+if f == 0
     fprintf('CG''s distance to the Sun [AU]:      %.1f\n', dis_sun);
 end
 

@@ -1,10 +1,8 @@
-function gdust = Plot_Particles( r1, v1, r2, v2 )
+function gdust = Plot_Particles( r, v)
 % Plots all particles. 
 % Particles with escape velocity get a different color
 
 global GM cmap
-r = [r1 ; r2];
-v = [v1 ; v2];
 
 % Color according to mass:
 % C_index = int32(((r(:,4)-min(r(:,4)))./(max(r(:,4))-min(r(:,4)))).^.5 .* (length(cmap)-1))+1;

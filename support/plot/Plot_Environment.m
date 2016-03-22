@@ -1,7 +1,7 @@
 function [gSunDir, gRot, gTerm, gSun] = Plot_Environment( sun_dir)
 % This function plots some lines and the terminator plane
 
-global nucls_rad rot_matrix
+global rot_matrix nucls_rad
 
 % Create light source (Also known as 'Sun')
 gSun = light('Position', sun_dir, 'Style', 'infinite');

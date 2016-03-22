@@ -24,6 +24,6 @@ C = .6*ones(np,1,3);
 % C(:,1,3) = 1-jo;
 
 gbody = patch(X,Y,Z,C, 'FaceColor', 'flat',...
-    'AmbientStrength', .2, 'DiffuseStrength', .8, 'LineStyle', 'none');
+    'AmbientStrength', .3, 'DiffuseStrength', .8, 'LineStyle', 'none');
 
 end

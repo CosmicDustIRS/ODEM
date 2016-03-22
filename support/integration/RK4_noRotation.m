@@ -1,38 +1,35 @@
-function [r, v] = RK4( r, v, dt , nodes_pos, nodes_norm)
-% This is the RungeKutta4 integration routine.
+function [r, v] = RK4_noRotation( r, v, dt , nodes_pos, nodes_norm)
+% This is the RungeKutta4 integration routine. First difference to the standard
+% RK4 is that it does not rotate the comet in between the RK steps. To be
+% used with very small time steps. A point on the comet surface rotates
+% with approximately .3m/s about the comet centre. This rotation can be
+% ignored if the travel distance of a node within the time step is smaller
+% than its radius. For example: node radius is 8m. 8m/0.3m/s=26s Therefore
+% using a time step of around 20s with this method should not be a problem
+% in this example.
 
-global rot_vector rad_per_sec
 n = size(r,1);
 if n == 0
     return
 end
 dt1 = repmat([dt,dt,dt,0],size(r,1),1);
 dt2 = dt1./2;
-rot_nodes_halfstep = cspice_axisar(rot_vector, dt/2*rad_per_sec);
 
 %- Perform RK4 step ------------------------------------------------%
 k_vel_1 = v;                                                        %
-k_acc_1 = calc_accel(r, nodes_pos, nodes_norm, n);                     % Step 1
+k_acc_1 = calc_accel(r, nodes_pos, nodes_norm, n);                  % Step 1
 %--------------------------------------------------------------------------------------------
-for i=1:size(nodes_pos,1)                                           % Apply small rotation to
-    nodes_pos(i,1:3) = rot_nodes_halfstep * nodes_pos(i,1:3).';     % the nodes to account for 
-    nodes_norm(i,1:3) = rot_nodes_halfstep * nodes_norm(i,1:3).';   % comet rotation between
-end                                                                 % RK step 1 and 2/3
 r2 = r + k_vel_1 .* dt2;                                            % 
 k_vel_2 = v + k_acc_1 .* dt2;                                       %
-k_acc_2 = calc_accel(r2, nodes_pos, nodes_norm, n);                    % Step 2
+k_acc_2 = calc_accel(r2, nodes_pos, nodes_norm, n);                 % Step 2
 %--------------------------------------------------------------------------------------------
 r2 = r + k_vel_2 .* dt2;                                            %
 k_vel_3 = v + k_acc_2 .* dt2;                                       %
-k_acc_3 = calc_accel (r2, nodes_pos, nodes_norm, n);                   % Step 3
+k_acc_3 = calc_accel (r2, nodes_pos, nodes_norm, n);                % Step 3
 %--------------------------------------------------------------------------------------------
-for i=1:size(nodes_pos,1)                                           % Apply small rotation to
-    nodes_pos(i,1:3) = rot_nodes_halfstep * nodes_pos(i,1:3).';     % the nodes to account for
-    nodes_norm(i,1:3) = rot_nodes_halfstep * nodes_norm(i,1:3).';   % comet rotation between 
-end                                                                 % RK step 2/3 and 4
-r2 = r + k_vel_3 .* dt1;                                             %
-k_vel_4 = v + k_acc_3 .* dt1;                                        %
-k_acc_4 = calc_accel(r2, nodes_pos, nodes_norm, n);                    % Step 4
+r2 = r + k_vel_3 .* dt1;                                            %
+k_vel_4 = v + k_acc_3 .* dt1;                                       %
+k_acc_4 = calc_accel(r2, nodes_pos, nodes_norm, n);                 % Step 4
 %--------------------------------------------------------------------------------------------
 %- Update Solution -------------------------------------------------%
 r = r + dt1 .* (k_vel_1 + 2.*k_vel_2 + 2.*k_vel_3 + k_vel_4) ./ 6;
