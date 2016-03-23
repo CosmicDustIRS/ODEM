@@ -53,7 +53,7 @@ end
 %%
 
 rnd_num_spawn = rand(n_nodes, 1);
-spawn_index = rnd_num_spawn < P_spawn;
+spawn_index = rnd_num_spawn < P_spawn;		% returns rowvector(n_nodes) with either 0 or 1 values
 spawn_number = sum(spawn_index);
 if spawn_number == 0     % Return without spawning new particles.
     r = r_old;
@@ -82,6 +82,7 @@ v = [v_old ; v];
 end
 
 function v = Initial_Velocity(r, n)
+% This function calculates the rotational velocity for each spawned particle
 global rot_vector
 w = repmat(rot_vector.', n, 1);
 v = zeros(n, 4);
